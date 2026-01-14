@@ -26,8 +26,8 @@ def load_logs():
     DB_PORT = os.getenv("DB_PORT", "5432")
     DB_NAME = os.getenv("DB_NAME", "postgres")
 
-    SCHEMA = os.getenv("DB_SCHEMA", "jade_dev")
-    TABLE_NAME = os.getenv("DB_TABLE", "logs_access")
+    SCHEMA = os.getenv("DB_SCHEMA", "PROD")
+    TABLE_NAME = os.getenv("DB_TABLE", "BRONZE_LOGS")
 
     os.makedirs(LOCAL_DIR, exist_ok=True)
 
