@@ -20,7 +20,6 @@ s3 = session.client(
 
 # Variables
 bucket_name = "wintershoplogs"
-prefix = "access_2026"
 local_dir = "Bronze"
 
 # Point de départ
@@ -46,7 +45,7 @@ if "Contents" in response:
         file_name = os.path.basename(file_key)
 
         # On ne prend que les fichiers >= START_FILE
-        if file_name > latest_file:
+        if file_name >= latest_file:
             files_to_download.append(file_key)
 else:
     print("Aucun fichier trouvé")
@@ -66,7 +65,7 @@ for file_key in files_to_download:
 
     # Lire le fichier dans un DataFrame
     # On suppose que le log est CSV ou texte séparé par un espace ou tab
-    df = pd.read_csv(local_path, sep=" ", header=None)  # adapter le sep si nécessaire
+    df = pd.read_csv(local_path, sep="🎭", header=None, engine='python')  # adapter le sep si nécessaire
     all_logs.append(df)
 
 # Concaténer tous les fichiers
@@ -87,15 +86,34 @@ DB_NAME = "postgres"
 SCHEMA = "Jade_DEV"
 TABLE_NAME = "logs_access"
 
-
 if not df_all.empty:
     # Connexion SQLAlchemy
     engine = create_engine(f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}")
-
-    with engine.connect() as conn:
+    
+    with engine.begin() as conn:  # begin() = transaction + commit automatique
         conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {SCHEMA};"))
         conn.commit()
 
     # Écrire dans PostgreSQL
     df_all.to_sql(name=TABLE_NAME, con=engine, schema=SCHEMA, if_exists="append", index=False)
     print(f"Données insérées dans {SCHEMA}.{TABLE_NAME}")
+
+# recalculer le latest file
+files = [f for f in os.listdir(local_dir) if f.startswith("access_")]
+
+if files:
+    # le max lexicographique = fichier le plus récent
+    latest_file = max(files)
+    print("Fichier le plus récent :", latest_file)
+else:
+    latest_file = None
+    print("Aucun fichier dans Bronze")
+
+for f in os.listdir(local_dir):
+    file_path = os.path.join(local_dir, f)
+
+    # Vérifie que c'est bien un fichier
+    if os.path.isfile(file_path) and f != latest_file:
+        os.remove(file_path)
+    else:
+        print(f"Gardé : {f}")
