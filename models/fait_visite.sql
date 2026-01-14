@@ -20,10 +20,10 @@ renamed as (
         -- protocol,
         status_visite as statut_id,
         {{ is_code('status_visite',200) }} as Erreur_Oui_Non,
-        bytes,
+        -- bytes,
         referer,
-        user_agent,
-        ingested_at
+        user_agent, -- traiter 
+        ingested_at as date_ajout_ligne
     
     from silver_logs as s
 
