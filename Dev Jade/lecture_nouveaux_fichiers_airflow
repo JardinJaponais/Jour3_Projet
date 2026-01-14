@@ -4,6 +4,7 @@ import os
 import pandas as pd
 from io import StringIO
 from sqlalchemy import create_engine
+from sqlalchemy import text
 
 # Créer une session boto3 avec les paramètres MinIO
 session = Session(
@@ -17,21 +18,25 @@ s3 = session.client(
     endpoint_url= "http://51.77.215.42:9010",
 )
 
-# Exemple : Lister les objets dans un bucket
-
-# response = s3.list_objects_v2(Bucket="wintershoplogs")
-# for obj in response["Contents"]:
-#     print(obj["Key"])
-
-
+# Variables
 bucket_name = "wintershoplogs"
 prefix = "access_2026"
 local_dir = "Bronze"
+
 # Point de départ
-START_FILE = "access_2026-01-14_09_50_02"
+# lister tous les fichiers access_ dans Bronze
+files = [f for f in os.listdir(local_dir) if f.startswith("access_")]
+
+if files:
+    # le max lexicographique = fichier le plus récent
+    latest_file = max(files)
+    print("Fichier le plus récent :", latest_file)
+else:
+    latest_file = None
+    print("Aucun fichier dans Bronze")
 
 # lister les fichiers du bucket
-response = s3.list_objects_v2(Bucket=bucket_name, Prefix=prefix)
+response = s3.list_objects_v2(Bucket=bucket_name)
 
 files_to_download = []
 
@@ -41,7 +46,7 @@ if "Contents" in response:
         file_name = os.path.basename(file_key)
 
         # On ne prend que les fichiers >= START_FILE
-        if file_name >= START_FILE:
+        if file_name > latest_file:
             files_to_download.append(file_key)
 else:
     print("Aucun fichier trouvé")
@@ -50,11 +55,11 @@ all_logs = []
 
 for file_key in files_to_download:
     file_name = os.path.basename(file_key)
-    local_path = os.path.join(LOCAL_DIR, file_name)
+    local_path = os.path.join(local_dir, file_name)
 
     # Télécharger si pas déjà présent
     if not os.path.exists(local_path):
-        s3.download_file(BUCKET_NAME, file_key, local_path)
+        s3.download_file(bucket_name, file_key, local_path)
         print(f"Téléchargé : {file_name}")
     else:
         print(f"Déjà présent : {file_name}")
@@ -82,3 +87,15 @@ DB_NAME = "postgres"
 SCHEMA = "Jade_DEV"
 TABLE_NAME = "logs_access"
 
+
+if not df_all.empty:
+    # Connexion SQLAlchemy
+    engine = create_engine(f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}")
+
+    with engine.connect() as conn:
+        conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {SCHEMA};"))
+        conn.commit()
+
+    # Écrire dans PostgreSQL
+    df_all.to_sql(name=TABLE_NAME, con=engine, schema=SCHEMA, if_exists="append", index=False)
+    print(f"Données insérées dans {SCHEMA}.{TABLE_NAME}")

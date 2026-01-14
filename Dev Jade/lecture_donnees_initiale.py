@@ -4,6 +4,7 @@ import os
 import pandas as pd
 from io import StringIO
 from sqlalchemy import create_engine
+from sqlalchemy import text
 
 # Créer une session boto3 avec les paramètres MinIO
 session = Session(
@@ -31,6 +32,8 @@ local_dir = "Bronze"
 # lister les fichiers du bucket
 response = s3.list_objects_v2(Bucket=bucket_name, Prefix=prefix)
 
+all_logs = []
+
 if "Contents" in response:
     for obj in response["Contents"]:
         file_key = obj["Key"]
@@ -39,13 +42,18 @@ if "Contents" in response:
 
         s3.download_file(bucket_name, file_key, local_path)
         print("Téléchargé :", file_name)
+
+        df = pd.read_csv(local_path, sep = "🎭" , header=None)  # adapter le sep si nécessaire
+        all_logs.append(df)
 else:
     print("Aucun fichier trouvé")
 
-# bucket_name = "wintershoplogs"
-# file_key = "access_2026-01-14_09-00-01.log"
-# local_path = "access_2026-01-14_09-00-01.log"
-# s3.download_file(bucket_name, file_key, local_path)
+if all_logs:
+    df_all = pd.concat(all_logs, ignore_index=True)
+    print(f"Total lignes : {len(df_all)}")
+else:
+    df_all = pd.DataFrame()
+    print("Aucun log à traiter")
 
 # mettre en df puis dans la bdd
 # PostgreSQL
@@ -61,9 +69,9 @@ if not df_all.empty:
     # Connexion SQLAlchemy
     engine = create_engine(f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}")
 
-    # Crée le schéma si nécessaire
     with engine.connect() as conn:
-        conn.execute(f"CREATE SCHEMA IF NOT EXISTS {SCHEMA};")
+        conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {SCHEMA};"))
+        conn.commit()
 
     # Écrire dans PostgreSQL
     df_all.to_sql(name=TABLE_NAME, con=engine, schema=SCHEMA, if_exists="append", index=False)
