@@ -22,7 +22,9 @@ renamed as (
         {{ is_code('status_visite',200) }} as Erreur_Oui_Non,
         -- bytes,
         referer,
-        user_agent, -- traiter 
+        {{ ua_support('user_agent') }} as support,
+        {{ ua_os('user_agent') }} as os,
+        {{ ua_browser('user_agent') }} as navigateur,
         ingested_at as date_ajout_ligne
     
     from silver_logs as s
