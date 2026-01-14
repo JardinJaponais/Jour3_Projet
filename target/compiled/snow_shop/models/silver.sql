@@ -1,0 +1,1 @@
+SELECT * FROM 'access_2026-01-14_14-20-01.log';
