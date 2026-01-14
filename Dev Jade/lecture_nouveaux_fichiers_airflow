@@ -1,6 +1,9 @@
 import boto3
 from boto3.session import Session
 import os
+import pandas as pd
+from io import StringIO
+from sqlalchemy import create_engine
 
 # Créer une session boto3 avec les paramètres MinIO
 session = Session(
@@ -24,22 +27,58 @@ s3 = session.client(
 bucket_name = "wintershoplogs"
 prefix = "access_2026"
 local_dir = "Bronze"
+# Point de départ
+START_FILE = "access_2026-01-14_09_50_02"
 
 # lister les fichiers du bucket
 response = s3.list_objects_v2(Bucket=bucket_name, Prefix=prefix)
+
+files_to_download = []
 
 if "Contents" in response:
     for obj in response["Contents"]:
         file_key = obj["Key"]
         file_name = os.path.basename(file_key)
-        local_path = local_dir + "/" + file_name
 
-        s3.download_file(bucket_name, file_key, local_path)
-        print("Téléchargé :", file_name)
+        # On ne prend que les fichiers >= START_FILE
+        if file_name >= START_FILE:
+            files_to_download.append(file_key)
 else:
     print("Aucun fichier trouvé")
 
-# bucket_name = "wintershoplogs"
-# file_key = "access_2026-01-14_09-00-01.log"
-# local_path = "access_2026-01-14_09-00-01.log"
-# s3.download_file(bucket_name, file_key, local_path)
+all_logs = []
+
+for file_key in files_to_download:
+    file_name = os.path.basename(file_key)
+    local_path = os.path.join(LOCAL_DIR, file_name)
+
+    # Télécharger si pas déjà présent
+    if not os.path.exists(local_path):
+        s3.download_file(BUCKET_NAME, file_key, local_path)
+        print(f"Téléchargé : {file_name}")
+    else:
+        print(f"Déjà présent : {file_name}")
+
+    # Lire le fichier dans un DataFrame
+    # On suppose que le log est CSV ou texte séparé par un espace ou tab
+    df = pd.read_csv(local_path, sep=" ", header=None)  # adapter le sep si nécessaire
+    all_logs.append(df)
+
+# Concaténer tous les fichiers
+if all_logs:
+    df_all = pd.concat(all_logs, ignore_index=True)
+    print(f"Total lignes : {len(df_all)}")
+else:
+    df_all = pd.DataFrame()
+    print("Aucun log à traiter")
+
+# mettre en df puis dans la bdd
+# PostgreSQL
+DB_USER = "postgres"
+DB_PASSWORD = "1234"
+DB_HOST = "10.18.72.74"
+DB_PORT = "5432"
+DB_NAME = "postgres"
+SCHEMA = "Jade_DEV"
+TABLE_NAME = "logs_access"
+

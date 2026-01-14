@@ -1,6 +1,9 @@
 import boto3
 from boto3.session import Session
 import os
+import pandas as pd
+from io import StringIO
+from sqlalchemy import create_engine
 
 # Créer une session boto3 avec les paramètres MinIO
 session = Session(
@@ -43,3 +46,25 @@ else:
 # file_key = "access_2026-01-14_09-00-01.log"
 # local_path = "access_2026-01-14_09-00-01.log"
 # s3.download_file(bucket_name, file_key, local_path)
+
+# mettre en df puis dans la bdd
+# PostgreSQL
+DB_USER = "postgres"
+DB_PASSWORD = "1234"
+DB_HOST = "10.18.72.74"
+DB_PORT = "5432"
+DB_NAME = "postgres"
+SCHEMA = "Jade_DEV"
+TABLE_NAME = "logs_access"
+
+if not df_all.empty:
+    # Connexion SQLAlchemy
+    engine = create_engine(f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}")
+
+    # Crée le schéma si nécessaire
+    with engine.connect() as conn:
+        conn.execute(f"CREATE SCHEMA IF NOT EXISTS {SCHEMA};")
+
+    # Écrire dans PostgreSQL
+    df_all.to_sql(name=TABLE_NAME, con=engine, schema=SCHEMA, if_exists="append", index=False)
+    print(f"Données insérées dans {SCHEMA}.{TABLE_NAME}")
