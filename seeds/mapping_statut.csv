@@ -1,0 +1,12 @@
+code,libelle,categorie
+200,OK,Success
+201,Created,Success
+301,Moved Permanently,Redirection
+302,Found,Redirection
+400,Bad Request,Client Error
+401,Unauthorized,Client Error
+403,Forbidden,Client Error
+404,Not Found,Client Error
+500,Internal Server Error,Server Error
+502,Bad Gateway,Server Error
+503,Service Unavailable,Server Error

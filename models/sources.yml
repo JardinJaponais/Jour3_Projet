@@ -5,3 +5,4 @@ sources:
     schema: PROD
     tables:
       - name: BRONZE_LOGS
+      - name: SILVER_LOGS
