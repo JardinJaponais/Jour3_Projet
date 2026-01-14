@@ -1,0 +1,19 @@
+with silver_logs as (
+
+    select * from {{ sources('postgres_silver', 'silver_logs') }}
+    
+),
+
+renamed as (
+
+    Select 
+        ROW_NUMBER() OVER (ORDER BY path_page) AS page_id,
+        path_page
+    from(
+        select distinct path_page
+        from silver_logs
+    ) 
+
+)
+
+select * from renamed

@@ -1,0 +1,7 @@
+version: 2
+
+sources:
+  - name: postgres_silver
+    schema: Jade_DEV   # ou ton schéma réel
+    tables:
+      - name: silver_logs

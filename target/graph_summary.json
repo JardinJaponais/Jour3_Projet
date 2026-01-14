@@ -1,1 +1,1 @@
-{"_invocation_id": "0727fe9f-4554-4e79-bf80-8179ec44a69a", "linked": {}}
+{"_invocation_id": "35af5d8d-0583-4e14-80e2-91972e33896c", "linked": {"0": {"name": "source.snow_shop.postgres_silver.silver_logs", "type": "source"}, "1": {"name": "model.snow_shop.silver", "type": "model"}, "2": {"name": "model.snow_shop.fait_visite", "type": "model"}}}

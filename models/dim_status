@@ -1,0 +1,19 @@
+with silver_logs as (
+
+    select * from {{ sources('postgres_silver', 'silver_logs') }}
+    
+),
+
+renamed as (
+
+    Select 
+        status_visite AS statut_id,
+        
+    from(
+        select distinct status_visite
+        from silver_logs
+    ) 
+
+)
+
+select * from renamed
