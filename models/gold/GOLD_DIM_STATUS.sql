@@ -1,6 +1,6 @@
 with silver_logs as (
 
-    select * from {{ sources('postgres_silver', 'silver_logs') }}
+    select * from {{ sources('prod', 'SILVER_LOGS') }}
     
 ),
 
