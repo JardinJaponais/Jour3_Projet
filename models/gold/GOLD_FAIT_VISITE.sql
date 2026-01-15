@@ -1,12 +1,12 @@
 with silver_logs as (
 
-    select * from {{ sources('postgres_silver', 'SILVER_LOGS') }}
+    select * from {{ sources('prod', 'SILVER_LOGS') }}
     
 ),
 
 dim_pages as (
 
-    select * from {{ sources('postgres_silver', 'SILVER_LOGS') }}
+    select * from {{ sources('prod', 'GOLD_DIM_PAGES') }}
     
 ),
 
