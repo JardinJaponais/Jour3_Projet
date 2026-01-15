@@ -16,7 +16,7 @@ parsed as (
     md5(raw_line) as event_hash,
 
     -- regexp_match renvoie text[] : (m)[1]=ip, (m)[2]=ident, etc.
-    (m)[1] as ip,
+    md5((m)[1]) as ip,
     nullif((m)[3], '-') as username,
 
     -- ts_raw ex: "14/Jan/2026:00:20:02 " (note: espace avant ])

@@ -88,6 +88,8 @@ def load_logs():
     df_all = pd.concat(all_logs, ignore_index=True)
     print(f"Total lignes : {len(df_all)}")
 
+    df_all.columns = ["raw_line"]
+
     # --- Charger dans Postgres ---
     engine = create_engine(
         f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
