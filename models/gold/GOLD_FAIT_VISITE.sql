@@ -6,7 +6,7 @@ with silver_logs as (
 
 dim_pages as (
 
-    select * from {{ sources('prod', 'GOLD_DIM_PAGES') }}
+    select * from {{ ref('GOLD_DIM_PAGES') }}
     
 ),
 
