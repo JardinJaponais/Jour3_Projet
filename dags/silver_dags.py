@@ -1,6 +1,9 @@
 from datetime import datetime
 from airflow import DAG
-from airflow.operators.python import PythonOperator
+from airflow.operators.bash import BashOperator
+
+DBT_PROJECT_DIR = "/opt/airflow/dbt/Jour3_Projet"  # adapte au chemin dans ton environnement
+DBT_PROFILES_DIR = "/opt/airflow/dbt/Jour3_Projet"
 
 
 with DAG(
@@ -11,7 +14,11 @@ with DAG(
     max_active_runs=1,
     tags=["bronze", "silver", "logs"],
 ) as dag:
-    PythonOperator(
-        task_id="bronze_to_silver",
-        python_callable=lambda: bronze_to_silver(),
-    ) 
+
+    dbt_run_silver_logs = BashOperator(
+        task_id="dbt_run_silver_logs",
+        bash_command=(
+            f"cd {DBT_PROJECT_DIR} && "
+            f"dbt run -s SILVER_LOGS --profiles-dir {DBT_PROFILES_DIR} --target dev"
+        ),
+    )
