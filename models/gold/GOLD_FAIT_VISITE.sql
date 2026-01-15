@@ -1,9 +1,14 @@
 with silver_logs as (
 
-    select * from {{ sources('postgres_silver', 'silver_logs') }}
+    select * from {{ sources('postgres_silver', 'SILVER_LOGS') }}
     
 ),
 
+dim_pages as (
+
+    select * from {{ sources('postgres_silver', 'SILVER_LOGS') }}
+    
+),
 
 renamed as (
 

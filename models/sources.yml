@@ -6,3 +6,6 @@ sources:
     tables:
       - name: BRONZE_LOGS
       - name: SILVER_LOGS
+      - name: GOLD_DIM_STATUS
+      - name: GOLD_DIM_PAGES
+    
