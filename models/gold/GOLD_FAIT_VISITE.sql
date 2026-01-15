@@ -1,19 +1,19 @@
 with silver_logs as (
 
-    select * from {{ sources('prod', 'SILVER_LOGS') }}
+    select * from {{ ref('SILVER_LOGS') }}
     
 ),
 
 dim_pages as (
 
-    select * from {{ sources('prod', 'GOLD_DIM_PAGES') }}
+    select * from {{ ref('GOLD_DIM_PAGES') }}
     
 ),
 
 renamed as (
 
     select
-        raw_line as Visite_id,
+        event_hash as Visite_id,
         -- ip,
         -- ident,
         username,
@@ -27,7 +27,7 @@ renamed as (
         {{ is_code('status_visite',200) }} as Erreur_Oui_Non,
         -- bytes,
         referer,
-        {{ ua_support('user_agent') }} as support,
+        {{ ua_support('user_agent') }} as Support,
         {{ ua_os('user_agent') }} as os,
         {{ ua_browser('user_agent') }} as navigateur,
         ingested_at as date_ajout_ligne

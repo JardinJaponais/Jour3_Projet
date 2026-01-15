@@ -1,6 +1,6 @@
 with silver_logs as (
 
-    select * from {{ sources('prod', 'SILVER_LOGS') }}
+    select * from {{ ref('SILVER_LOGS') }}
     
 ),
 
